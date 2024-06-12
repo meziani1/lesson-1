@@ -5,6 +5,9 @@ const mongoose = require('mongoose');
 const Mydata=require('./models/mydataschema');
 // Create an instance of an Express application
 const app = express();
+
+app.set('view engine','ejs')
+app.use(express.static('public'))
 // Middleware to parse URL-encoded data
 app.use(express.urlencoded({ extended: true }));
 
@@ -12,7 +15,13 @@ app.use(express.urlencoded({ extended: true }));
 const PORT = process.env.PORT || 3000;
 
 app.get('/',(req,res)=>{
-  res.sendFile("./views/style/style.html", { root: __dirname })
+  Mydata.find().then((result) => {
+        res.render('style/style',{arr:result})
+  }
+  ).catch((err) => {
+    console.log(err)
+  }
+  )
 });
 
 app.get('/index.html',(req,res)=>{
@@ -41,5 +50,16 @@ app.post('/',(req,res)=>{
                        }
                        )
                        })
-                        
+// Auto Refresh
+const path = require("path");
+const livereload = require("livereload");
+const liveReloadServer = livereload.createServer();
+liveReloadServer.watch(path.join(__dirname, 'public'));
+const connectLivereload = require("connect-livereload");
+app.use(connectLivereload); 
+liveReloadServer.server.once("connection", () => {
+setTimeout(() => {
+     liveReloadServer.refresh("/");
+}, 100);
+});                   
 
